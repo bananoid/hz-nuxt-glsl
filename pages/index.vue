@@ -1,8 +1,7 @@
 <template>
   <main class="page">
     <section id="works">
-      <h1>{{ $t('Works') }}</h1>
-      <h2>underconstrucion</h2>
+      <works></works>
     </section>
     <section id="about">
       <h1>{{ $t('About') }}</h1>
@@ -16,8 +15,10 @@
 </template>
 
 <script lang="ts">
+import works from '~/components/works.vue'
+
 export default {
-  components: {}
+  components: { works }
 }
 </script>
 
@@ -35,4 +36,8 @@ main
       font-weight normal
       text-transform uppercase
       font-size 0.8em
+    >.works
+      width 100%
+      height 100%
+      flex-grow 1
 </style>

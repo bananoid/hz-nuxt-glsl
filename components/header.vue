@@ -1,6 +1,6 @@
 <template>
   <menu>
-    <div class="logo">Giosuè Russo</div>
+    <div class="logo">HZ</div>
     <ul>
       <li v-for="item in menu" :key="item.label">
         <template v-if="item.section">
@@ -43,10 +43,10 @@ export default {
           label: this.$t('Contacts'),
           section: '#contacts'
         },
-        {
-          label: this.$t('Instagram'),
-          link: 'https://www.instagram.com/makitorin/'
-        }
+        // {
+        //   label: this.$t('Instagram'),
+        //   link: 'https://www.instagram.com/makitorin/'
+        // }
       ]
     }
   }
@@ -55,13 +55,13 @@ export default {
 
 <style lang="stylus" scoped>
 menu
-  background-color alpha(#000,0.9)
+  background-color alpha(#f0f,0.8)
   display flex
   justify-content space-between
   min-height 40px
-  position sticky
-  top 0
-  left 0
+  max-width 100%
+  overflow hidden
+
   >.logo
     padding 0px 16px
     display flex
@@ -83,6 +83,7 @@ menu
         height 40px
         text-transform uppercase
         position relative
+        white-space nowrap
         &:hover
           background-color alpha(#fff,0.1)
         &:active

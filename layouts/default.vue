@@ -30,11 +30,16 @@ body
 
 .layout
   // background-color alpha(#f00,0.3)
+  max-width 100vw
   min-height 100vh
   position relative
   display flex
   flex-direction column
   letter-spacing 0.1em
+  > menu
+    position sticky
+    top 0
+    left 0
 
   >.page
     flex-grow 1
