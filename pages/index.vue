@@ -36,8 +36,11 @@ main
       font-weight normal
       text-transform uppercase
       font-size 0.8em
-    >.works
-      width 100%
-      height 100%
-      flex-grow 1
+
+#works
+  max-height calc(100vh - 10px)
+  >.works
+    width 100%
+    height 100%
+    flex-grow 1
 </style>

@@ -3,9 +3,19 @@ import {
   OrthographicCamera,
   Scene,
   PlaneBufferGeometry,
-  MeshBasicMaterial,
-  Mesh
+  Mesh,
+  ShaderMaterial,
+  Vector3
 } from 'three'
+
+type UniformValue<T> = {
+  value: T
+}
+
+type Uniforms = {
+  iTime: UniformValue<number>
+  iResolution: UniformValue<Vector3>
+}
 
 export default class ShaderToy {
   canvas: HTMLCanvasElement
@@ -13,11 +23,15 @@ export default class ShaderToy {
   camera: OrthographicCamera
   scene: Scene
   plane: PlaneBufferGeometry
-  material: MeshBasicMaterial
+  material: ShaderMaterial
   width: number = 0
   height: number = 0
+  uniforms: Uniforms = {
+    iTime: { value: 0 },
+    iResolution: { value: new Vector3() }
+  }
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, fragmentShader: string) {
     this.canvas = canvas
     this.renderer = new WebGLRenderer({
       canvas
@@ -34,9 +48,12 @@ export default class ShaderToy {
     )
     this.scene = new Scene()
     this.plane = new PlaneBufferGeometry(2, 2)
-    this.material = new MeshBasicMaterial({
-      color: '#000000'
+
+    this.material = new ShaderMaterial({
+      fragmentShader,
+      uniforms: this.uniforms
     })
+
     const mesh = new Mesh(this.plane, this.material)
     this.scene.add(mesh)
 
@@ -55,9 +72,14 @@ export default class ShaderToy {
     return needResize
   }
 
-  render() {
+  render(time: number = 0) {
+    time *= 0.001
     this.resizeRendererToCanvasSize()
+
+    this.uniforms.iResolution.value.set(this.width, this.height, 1)
+    this.uniforms.iTime.value = time
+
     this.renderer.render(this.scene, this.camera)
-    requestAnimationFrame(this.render)
+    requestAnimationFrame(this.render.bind(this))
   }
 }

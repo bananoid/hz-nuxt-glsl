@@ -21,8 +21,10 @@
     }
   },
   "dependencies": {
+    "glslify-loader": "^2.0.0",
     "nuxt": "^2.0.0",
     "nuxt-i18n": "^6.4.0",
+    "raw-loader": "^4.0.0",
     "stylus": "^0.54.7",
     "stylus-loader": "^3.0.2",
     "three": "^0.112.1",
@@ -32,6 +34,7 @@
     "@nuxt/typescript-build": "^0.3.2",
     "@nuxtjs/eslint-config": "^1.0.1",
     "@nuxtjs/eslint-module": "^1.0.0",
+    "@typescript-eslint/parser": "^2.17.0",
     "babel-eslint": "^10.0.1",
     "eslint": "^6.1.0",
     "eslint-config-prettier": "^4.1.0",

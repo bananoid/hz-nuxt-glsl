@@ -45,9 +45,9 @@ body
     flex-grow 1
     >section
       min-height calc(100vh - 60px)
-      // border 8px solid #f00
+      max-height calc(100vh - 60px)
+
   > footer
-    // background-color alpha(#000,0.1)
     padding 0px 8px
     display flex
     justify-content center
