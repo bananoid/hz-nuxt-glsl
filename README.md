@@ -1,6 +1,6 @@
 # hizen.io
 
-> Giosuè Russo Food Photographer
+> Giosuè Russo
 
 ## Build Setup
 
