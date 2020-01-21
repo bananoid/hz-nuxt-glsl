@@ -14,6 +14,9 @@
     "strict": true,
     "noEmit": true,
     "baseUrl": ".",
+    "strictPropertyInitialization": false,
+    "experimentalDecorators": true,
+    "noUnusedParameters": false,
     "paths": {
       "~/*": [
         "./*"
