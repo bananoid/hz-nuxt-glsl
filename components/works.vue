@@ -7,7 +7,8 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import fragmentShader from '~/assets/shaders/works.frag'
+// import fragmentShader from '~/assets/shaders/works.frag'
+import fragmentShader from '~/assets/shaders/raymarch.glsl'
 import ShaderToy from '~/lib/ShaderToy'
 
 @Component({})
