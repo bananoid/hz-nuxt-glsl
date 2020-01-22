@@ -5,17 +5,18 @@ precision mediump float;
 uniform vec3 iResolution;
 uniform float iTime;
 
-#define MAX_STEPS 20
+#define MAX_STEPS 13
 #define MAX_DIST 20.
-#define SURF_DIST .001
+#define SURF_DIST .01
 
 float GetDist(vec3 p) {
-  float t = iTime * 0.1;
+  float t = iTime * 0.01;
   float sY = cos(t * 2.) * 0.1 + 0.5 + .9;
   float sX = sin(t * 2.) * 0.1;
   float sZ = sin(t * 1.) * 1.;
-	vec4 s1 = vec4(sX, sY, 7.0 + sZ , 1.2);
-	vec4 s2 = vec4(sX, sY, 7.0-0.5 + sZ, 0.8);
+  float pZ = 5.0;
+	vec4 s1 = vec4(sX, sY, pZ + sZ , 1.2);
+	vec4 s2 = vec4(sX, sY, pZ - 0.5 + sZ, 0.8);
 
   float sphereDist1 =  length(p-s1.xyz)-s1.w + sin(t*10. + p.y * 4.0)*.1;
   float sphereDist2 =  length(p-s2.xyz)-s2.w + sin(t*20. + p.y * 20.0)*.03;
@@ -46,10 +47,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 col = vec3(0.0);
 
     vec3 ro = vec3(0, 1, 0);
-    vec3 rd = normalize(vec3(uv.x, uv.y, 1));
+    vec3 rd = normalize(vec3(uv.x, uv.y, 1.));
 
     float d = RayMarch(ro, rd);
-    d = d/6. - 0.5;
+    d = d*.4 - 1. ;
     col = vec3(0.0,1.0-d,1.0-d);
 
     fragColor = vec4(col,1.0);
