@@ -7,7 +7,7 @@ uniform float iTime;
 
 #define MAX_STEPS 1000
 #define MAX_DIST 100.
-#define SURF_DIST .0001
+#define SURF_DIST .001
 
 float sdSphere( vec3 p, float s )
 {
@@ -161,6 +161,32 @@ float softshadow(vec3 ro, vec3 rd, float mint, float tmax, float w)
     return 0.25*(1.0+res)*(1.0+res)*(2.0-res); // smoothstep
 }
 
+float calcSoftshadow( in vec3 ro, in vec3 rd, in float mint, in float tmax)
+{
+	float res = 1.0;
+  float t = mint;
+  float ph = 1e10; // big, such that y = 0 on the first iteration
+
+  for( int i=0; i<32; i++ )
+  {
+    float h = GetDist( ro + rd*t );
+    // use this if you are getting artifact on the first iteration, or unroll the
+    // first iteration out of the loop
+    //float y = (i==0) ? 0.0 : h*h/(2.0*ph);
+
+    float y = h*h/(2.0*ph);
+    float d = sqrt(h*h-y*y);
+    res = min( res, 10.0*d/max(0.0,t-y) );
+    ph = h;
+
+    t += h;
+
+    if( res<0.0001 || t>tmax ) break;
+
+  }
+  return clamp( res, 0.0, 1.0 );
+}
+
 vec3 GetNormal(vec3 p) {
 	float d = GetDist(p);
   vec2 e = vec2(.01, 0);
@@ -182,7 +208,7 @@ float GetLight(vec3 p, vec3 lightPos) {
   // float d = RayMarch(p+n*SURF_DIST*2., l);
   // if(d<length(lightPos-p)) dif *= .1;
 
-  float shadow = softshadow( p, l, 0.01, 3.0, .3);
+  float shadow = calcSoftshadow( p, l, 0.01, 3.0);
   dif *= shadow;
 
   return dif;
@@ -202,13 +228,14 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   z = clamp(z , 0.0, 1.0);
   vec3 p = ro + rd * d;
 
-  vec3 lightPos = vec3(2, 2, 6);
+  // vec3 lightPos = vec3(3, 10, 20);
   // lightPos.xz += vec2(sin(iTime), cos(iTime))*2.;
+  // float dif = (((GetLight(p, lightPos)-0.5)*0.6)+0.5) * z * 2.0;
 
-  // float dif = GetLight(p, lightPos)*0.8 * z;
-  float dif = (((GetLight(p, lightPos)-0.5)*0.3)+0.5) * z * 2.0;
+  float dif = z;
 
   col = vec3(dif);
+
   vec3 tint = normalize(vec3(0.4, 0.7, 1.0));
   col += vec3(0.3, 0.0, 0.0);
   col *= tint * 3.0;
