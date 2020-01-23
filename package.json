@@ -25,6 +25,7 @@
     "nuxt": "^2.0.0",
     "nuxt-i18n": "^6.4.0",
     "raw-loader": "^4.0.0",
+    "stats.js": "^0.17.0",
     "stylus": "^0.54.7",
     "stylus-loader": "^3.0.2",
     "three": "^0.112.1",

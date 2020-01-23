@@ -16,7 +16,7 @@ class Works extends Vue {
   shaderToys: ShaderToy
   mounted() {
     const canvas: any = this.$refs.canvas
-    this.shaderToys = new ShaderToy(canvas, fragmentShader)
+    this.shaderToys = new ShaderToy(canvas, fragmentShader, true)
   }
 }
 export default Works

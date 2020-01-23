@@ -1,3 +1,5 @@
+import Stats from 'stats.js'
+
 import {
   WebGLRenderer,
   OrthographicCamera,
@@ -31,7 +33,23 @@ export default class ShaderToy {
     iResolution: { value: new Vector3() }
   }
 
-  constructor(canvas: HTMLCanvasElement, fragmentShader: string) {
+  stats: any
+
+  constructor(
+    canvas: HTMLCanvasElement,
+    fragmentShader: string,
+    debugMode: boolean = false
+  ) {
+    if (debugMode) {
+      this.stats = new Stats()
+      this.stats.showPanel(0)
+      if (canvas.parentElement) {
+        canvas.parentElement.style.position = 'relative'
+        this.stats.dom.style.position = 'absolute'
+        canvas.parentElement.appendChild(this.stats.dom)
+      }
+    }
+
     this.canvas = canvas
     this.renderer = new WebGLRenderer({
       canvas
@@ -79,7 +97,10 @@ export default class ShaderToy {
     this.uniforms.iResolution.value.set(this.width, this.height, 1)
     this.uniforms.iTime.value = time
 
+    this.stats && this.stats.begin()
     this.renderer.render(this.scene, this.camera)
+    this.stats && this.stats.end()
+
     requestAnimationFrame(this.render.bind(this))
   }
 }
