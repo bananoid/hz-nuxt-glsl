@@ -253,7 +253,11 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   float z = 1.0 - (d*0.2 - 0.7);
   z = clamp(z , 0.0, 1.0);
 
-  col = vec3(z);
+  vec3 colA = vec3(1.0,0.8,0.8) * 1.5;
+  vec3 colB = vec3(1.0,0.3,0.2);
+
+  // col = vec3(z);
+  col = mix(colB,colA, z);
 
   fragColor = vec4(col,1.0);
 }
