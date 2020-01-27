@@ -4,6 +4,7 @@ precision highp float;
 
 uniform vec3 iResolution;
 uniform float iTime;
+uniform vec2 iMouse;
 
 #define MAX_STEPS 1000
 #define MAX_DIST 100.
@@ -78,7 +79,7 @@ float rounding( in float d, in float h )
     return d - h;
 }
 
-mat2 rotate(float a) {
+mat2 Rot(float a) {
     float s = sin(a);
     float c = cos(a);
     return mat2(c, -s, s, c);
@@ -103,17 +104,17 @@ float opSmoothIntersection( float d1, float d2, float k ) {
 float GetDist(vec3 p) {
   float planeDist = p.y +0.1;
 
-	vec4 s = vec4(0, 0.9, 6, 1);
+	vec4 s = vec4(0, 0.9, 0, 1);
   p -= s.xyz;
-  p.xz *= rotate(iTime * 0.123 + 1.34);
-  p.xy *= rotate(iTime*0.9861234 * 0.1 + 0.44);
+  p.xz *= Rot(iTime * 0.123 + 1.34);
+  p.xy *= Rot(iTime*0.9861234 * 0.1 + 0.44);
   p += s.xyz;
 
   float obj1 = sdRoundBox( p - s.xyz + vec3(0.4,-0.3,0.4), vec3(0.2,0.5,0.2) , 0.3);
   float obj2 = sdSphere( p - s.xyz, s.w);
   float obj3 = sdCapsule( p - s.xyz, vec3(.0,-1.0,.0), vec3(.0,1.0,.0), 0.5 );
   // vec3 pp = p;
-  // pp.xz *= rotate(3.14);
+  // pp.xz *= Rot(3.14);
 
   // float obj4 = sdRoundCone( pp - s.xyz,  0.4, 0.2, 1. );
   // float obj5 = sdEllipsoid( p - s.xyz,  vec3(0.6,1.0,0.6) );
@@ -127,7 +128,7 @@ float GetDist(vec3 p) {
   // d = min(d, obj4);
   // d = rounding(d, sin(iTime) * 0.1 - 0.1);
   d = mix(d, obj6, sin(iTime * 0.1) * 0.5 + 0.5);
-  d = opSmoothUnion(d, planeDist,0.9);
+  d = opSmoothUnion(d, planeDist,2.9);
 
   return d;
 }
@@ -214,32 +215,45 @@ float GetLight(vec3 p, vec3 lightPos) {
   return dif;
 }
 
+float GetContour(vec3 p, float z){
+  // vec3 n = GetNormal(p);
+  // float dif = dot( camPos, n);
+  // float c = 0.0;
+  // if(dif > 0.5){
+  //   c = 1.0;
+  // }
+  return z;
+}
+
+vec3 R(vec2 uv, vec3 p, vec3 l, float z) {
+    vec3 f = normalize(l-p),
+        r = normalize(cross(vec3(0,1,0), f)),
+        u = cross(f,r),
+        c = p+f*z,
+        i = c + uv.x*r + uv.y*u,
+        d = normalize(i-p);
+    return d;
+}
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
   vec2 uv = (fragCoord-.5*iResolution.xy)/iResolution.y;
+	vec2 m = iMouse.xy/iResolution.xy;
 
   vec3 col = vec3(0);
 
-  vec3 ro = vec3(0, 1, 0);
-  vec3 rd = normalize(vec3(uv.x, uv.y, 1));
+  vec3 ro = vec3(0, 4, -5);
+  ro.yz *= Rot(-m.y*3.14+1.);
+  ro.xz *= Rot(-m.x*6.2831);
+
+  vec3 rd = R(uv, ro, vec3(0,1,0), 1.);
 
   float d = RayMarch(ro, rd);
+
   float z = 1.0 - (d*0.2 - 0.7);
   z = clamp(z , 0.0, 1.0);
-  vec3 p = ro + rd * d;
 
-  // vec3 lightPos = vec3(3, 10, 20);
-  // lightPos.xz += vec2(sin(iTime), cos(iTime))*2.;
-  // float dif = (((GetLight(p, lightPos)-0.5)*0.6)+0.5) * z * 2.0;
-
-  float dif = z;
-
-  col = vec3(dif);
-
-  vec3 tint = normalize(vec3(0.4, 0.7, 1.0));
-  col += vec3(0.3, 0.0, 0.0);
-  col *= tint * 3.0;
-  col -= 0.15;
+  col = vec3(z);
 
   fragColor = vec4(col,1.0);
 }

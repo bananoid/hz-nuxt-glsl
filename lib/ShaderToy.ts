@@ -7,7 +7,8 @@ import {
   PlaneBufferGeometry,
   Mesh,
   ShaderMaterial,
-  Vector3
+  Vector3,
+  Vector2
 } from 'three'
 
 type UniformValue<T> = {
@@ -17,6 +18,7 @@ type UniformValue<T> = {
 type Uniforms = {
   iTime: UniformValue<number>
   iResolution: UniformValue<Vector3>
+  iMouse: UniformValue<Vector2>
 }
 
 export default class ShaderToy {
@@ -30,7 +32,8 @@ export default class ShaderToy {
   height: number = 0
   uniforms: Uniforms = {
     iTime: { value: 0 },
-    iResolution: { value: new Vector3() }
+    iResolution: { value: new Vector3() },
+    iMouse: { value: new Vector2() }
   }
 
   stats: any
@@ -102,5 +105,9 @@ export default class ShaderToy {
     this.stats && this.stats.end()
 
     requestAnimationFrame(this.render.bind(this))
+  }
+
+  public setMousePosizion(pos: Vector2) {
+    this.uniforms.iMouse.value = pos
   }
 }
