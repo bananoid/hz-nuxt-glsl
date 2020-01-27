@@ -8,6 +8,8 @@ export default class TrackPad {
   private isDragging: boolean = false
   private targetEl: HTMLElement
   delegate: TrackPadDelegate
+  pointerX = 0
+  pointerY = 0
   position = new Vector2(0, 0)
   velocity = new Vector2(0, 0)
   dragVelocity = new Vector2(0, 0)
@@ -18,6 +20,11 @@ export default class TrackPad {
     targetEl.addEventListener('mousedown', this.startDrag.bind(this))
     targetEl.addEventListener('mouseup', this.stopDrag.bind(this))
     targetEl.addEventListener('mousemove', this.drag.bind(this))
+
+    targetEl.addEventListener('touchstart', this.startDrag.bind(this))
+    targetEl.addEventListener('touchend', this.stopDrag.bind(this))
+    targetEl.addEventListener('touchmove', this.drag.bind(this))
+
     this.animate()
   }
 
@@ -38,12 +45,28 @@ export default class TrackPad {
     this.isDragging = false
   }
 
-  private drag() {
+  private drag(e: Event) {
+    e.preventDefault()
     if (!this.isDragging) {
       return
     }
-    const e = <MouseEvent>window.event
-    this.dragVelocity.set(e.movementX, e.movementY)
+
+    if (!window.event) {
+      return
+    }
+
+    if (window.event.type === 'mousemove') {
+      const mouseEvent = <MouseEvent>window.event
+      this.dragVelocity.set(mouseEvent.movementX, mouseEvent.movementY)
+    } else {
+      const touchEvent = <TouchEvent>window.event
+      const touch = touchEvent.touches[0]
+      const deltaX = this.pointerX - touch.clientX
+      const deltaY = this.pointerY - touch.clientY
+      this.pointerX = touch.clientX
+      this.pointerY = touch.clientY
+      this.dragVelocity.set(deltaX, deltaY)
+    }
   }
 
   private animate() {
@@ -68,6 +91,6 @@ export default class TrackPad {
       return
     }
 
-    this.applyForce(this.dragVelocity)
+    this.applyForce(this.dragVelocity.multiplyScalar(0.1))
   }
 }
