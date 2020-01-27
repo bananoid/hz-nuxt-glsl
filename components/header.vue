@@ -55,12 +55,14 @@ export default {
 
 <style lang="stylus" scoped>
 menu
-  background-color alpha(#f0f,0.8)
+  background-color alpha(#000,0.7)
   display flex
   justify-content space-between
   min-height 40px
   max-width 100%
   overflow hidden
+  z-index 100
+  visibility hidden //Todo: Reactivate
 
   >.logo
     padding 0px 16px
