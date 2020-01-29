@@ -110,30 +110,39 @@ vec4 objectSDFColor(vec3 p) {
 
 	vec4 s = vec4(0, 0.9, 0, 1);
   
-  // p -= s.xyz;
-  // p.xz *= Rot(iTime * 0.123 + 1.34);
-  // p.xy *= Rot(iTime*0.9861234 * 0.1 + 0.44);
-  // p += s.xyz;
+  p -= s.xyz;
+  p.xz *= Rot(iTime* 0.123 + 1.34);
+  p.xy *= Rot(iTime*0.9861234 * 0.1 + 0.44);
+  p += s.xyz;
 
-  float obj1 = sdRoundBox( p - s.xyz + vec3(0.4,-0.3,0.4), vec3(0.2,0.5,0.2) , 0.3);
-  float obj2 = sdSphere( p - s.xyz, s.w);
-  float obj3 = sdCapsule( p - s.xyz, vec3(.0,-1.0,.0), vec3(.0,1.0,.0), 0.5 );
+  float obj2 =  sdTorus( p - s.xyz, vec2(0.8,0.1));
+  // sdSphere( p - s.xyz, s.w);
+  p -= s.xyz;
+  p.xy *= Rot(1.57075);
+  p += s.xyz;
+
+  float obj6 = sdTorus( p - s.xyz, vec2(1.0,0.3));
+  // float obj1 = sdRoundBox( p - s.xyz + vec3(0.4,-0.3,0.4), vec3(0.2,0.5,0.2) , 0.3);
+  // float obj3 = sdCapsule( p - s.xyz, vec3(.0,-1.0,.0), vec3(.0,1.0,.0), 0.5 );
   // vec3 pp = p;
   // pp.xz *= Rot(3.14);
 
   // float obj4 = sdRoundCone( pp - s.xyz,  0.4, 0.2, 1. );
   // float obj5 = sdEllipsoid( p - s.xyz,  vec3(0.6,1.0,0.6) );
-  float obj6 = sdTorus( p - s.xyz, vec2(1.0,0.3));
   // float obj7 = sdOctahedron( p - s.xyz, 1.0);
 
   float d = 0.0;
-  d = opSmoothSubtraction(obj1, obj3, 0.01);
+  // d = opSmoothSubtraction(obj1, obj3, 0.01);
+  d = obj2;
   // d = opSmoothSubtraction(obj3, d, 0.01);
   // d = min(obj4, d);
   // d = min(d, obj4);
   // d = rounding(d, sin(iTime) * 0.1 - 0.1);
-  d = mix(d, obj6, sin(iTime * 0.1) * 0.5 + 0.5);
-  vec4 dC = opSmoothUnionColor(vec4(1.0,0.,0.,d), vec4(0.,0.,1.,planeDist),0.9);
+  d = mix(d, obj6, sin(iTime * 2.1) * 0.5 + 0.5);
+  vec3 colA = vec3(0.0,0.7,1.0);
+  vec3 colB = vec3(0.0,0.2,1.0);
+
+  vec4 dC = opSmoothUnionColor(vec4(colB,d), vec4(colA,planeDist),0.9);
    
   return dC;
 }
@@ -269,7 +278,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   float d = dC.w;
 
   float z = 1.0 - (d*0.2 - 0.7);
-  z = clamp(z , 0.0, 1.0);
+  z = clamp(z*2.0, 0.0, 1.0);
 
   vec3 colA = vec3(1.0,0.8,0.8) * 1.5;
   vec3 colB = vec3(1.0,0.3,0.2);
@@ -277,8 +286,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   // col = vec3(z);
   vec3 zC = mix(colB,colA, z);
   
-  // col = mix(zC,dC.rgb * z, 0.9 ) ;
-  col = z * dC.rgb;
+  col = mix(zC,dC.rgb * z, 1. ) ;
+  // col = z * dC.rgb;
 
   fragColor = vec4(col,1.0);
 }
