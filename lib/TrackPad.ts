@@ -31,7 +31,7 @@ export default class TrackPad {
   setPositon(x: number, y: number) {
     // Todo: make parametric
     y = Math.min(y, 0)
-    y = Math.max(y, -200)
+    y = Math.max(y, -350)
 
     this.position.set(x, y)
     this.delegate && this.delegate.onTrackpadPosition(this, this.position)

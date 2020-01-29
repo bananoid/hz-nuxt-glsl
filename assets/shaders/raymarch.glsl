@@ -128,7 +128,7 @@ float GetDist(vec3 p) {
   // d = min(d, obj4);
   // d = rounding(d, sin(iTime) * 0.1 - 0.1);
   d = mix(d, obj6, sin(iTime * 0.1) * 0.5 + 0.5);
-  d = opSmoothUnion(d, planeDist,2.9);
+  d = opSmoothUnion(d, planeDist,0.9);
 
   return d;
 }
