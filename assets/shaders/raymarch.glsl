@@ -100,15 +100,20 @@ float opSmoothIntersection( float d1, float d2, float k ) {
   return mix( d2, d1, h ) + k*h*(1.0-h);
 }
 
+vec4 opSmoothUnionColor( vec4 a, vec4 b, float k ) {
+    float h = clamp( 0.5+0.5*(b.w-a.w)/k, 0., 1. );
+    return mix( b, a, h ) - k*h*(1.0-h);
+}
 
-float GetDist(vec3 p) {
+vec4 objectSDFColor(vec3 p) {
   float planeDist = p.y +0.1;
 
 	vec4 s = vec4(0, 0.9, 0, 1);
-  p -= s.xyz;
-  p.xz *= Rot(iTime * 0.123 + 1.34);
-  p.xy *= Rot(iTime*0.9861234 * 0.1 + 0.44);
-  p += s.xyz;
+  
+  // p -= s.xyz;
+  // p.xz *= Rot(iTime * 0.123 + 1.34);
+  // p.xy *= Rot(iTime*0.9861234 * 0.1 + 0.44);
+  // p += s.xyz;
 
   float obj1 = sdRoundBox( p - s.xyz + vec3(0.4,-0.3,0.4), vec3(0.2,0.5,0.2) , 0.3);
   float obj2 = sdSphere( p - s.xyz, s.w);
@@ -128,102 +133,114 @@ float GetDist(vec3 p) {
   // d = min(d, obj4);
   // d = rounding(d, sin(iTime) * 0.1 - 0.1);
   d = mix(d, obj6, sin(iTime * 0.1) * 0.5 + 0.5);
-  d = opSmoothUnion(d, planeDist,0.9);
-
-  return d;
+  vec4 dC = opSmoothUnionColor(vec4(1.0,0.,0.,d), vec4(0.,0.,1.,planeDist),0.9);
+   
+  return dC;
 }
 
-float RayMarch(vec3 ro, vec3 rd) {
+float objectSDF(vec3 p) {
+  return objectSDFColor(p).w; 
+}
+
+vec4 RayMarchColor(vec3 ro, vec3 rd) {
 	float dO=0.;
+
+  vec3 color = vec3(0.0);
 
   for(int i=0; i<MAX_STEPS; i++) {
     vec3 p = ro + rd*dO;
-      float dS = GetDist(p);
-      dO += dS;
-      if(dO>MAX_DIST || dS<SURF_DIST) break;
+    vec4 dSC = objectSDFColor(p);
+    float dS = dSC.w;
+    color = dSC.rgb;
+    dO += dS;
+    if(dO>MAX_DIST || dS<SURF_DIST) break;
   }
-
-  return dO;
+  color = normalize(color);
+  return vec4(color,dO);
 }
 
-float softshadow(vec3 ro, vec3 rd, float mint, float tmax, float w)
-{
- 	float t = mint;
-    float res = 1.0;
-    for( int i=0; i<256; i++ )
-    {
-     	float h = GetDist(ro + t*rd);
-        res = min( res, h/(w*t) );
-    	t += clamp(h, 0.005, 0.10);
-        if( res<-1.0 || t>tmax ) break;
-    }
-    res = max(res,-1.0); // clamp to [-1,1]
-
-    return 0.25*(1.0+res)*(1.0+res)*(2.0-res); // smoothstep
+float RayMarch(vec3 ro, vec3 rd) {
+  return RayMarchColor(ro,rd).w;
 }
 
-float calcSoftshadow( in vec3 ro, in vec3 rd, in float mint, in float tmax)
-{
-	float res = 1.0;
-  float t = mint;
-  float ph = 1e10; // big, such that y = 0 on the first iteration
+// float softshadow(vec3 ro, vec3 rd, float mint, float tmax, float w)
+// {
+//  	float t = mint;
+//     float res = 1.0;
+//     for( int i=0; i<256; i++ )
+//     {
+//      	float h = objectSDF(ro + t*rd);
+//         res = min( res, h/(w*t) );
+//     	t += clamp(h, 0.005, 0.10);
+//         if( res<-1.0 || t>tmax ) break;
+//     }
+//     res = max(res,-1.0); // clamp to [-1,1]
 
-  for( int i=0; i<32; i++ )
-  {
-    float h = GetDist( ro + rd*t );
-    // use this if you are getting artifact on the first iteration, or unroll the
-    // first iteration out of the loop
-    //float y = (i==0) ? 0.0 : h*h/(2.0*ph);
+//     return 0.25*(1.0+res)*(1.0+res)*(2.0-res); // smoothstep
+// }
 
-    float y = h*h/(2.0*ph);
-    float d = sqrt(h*h-y*y);
-    res = min( res, 10.0*d/max(0.0,t-y) );
-    ph = h;
+// float calcSoftshadow( in vec3 ro, in vec3 rd, in float mint, in float tmax)
+// {
+// 	float res = 1.0;
+//   float t = mint;
+//   float ph = 1e10; // big, such that y = 0 on the first iteration
 
-    t += h;
+//   for( int i=0; i<32; i++ )
+//   {
+//     float h = objectSDF( ro + rd*t );
+//     // use this if you are getting artifact on the first iteration, or unroll the
+//     // first iteration out of the loop
+//     //float y = (i==0) ? 0.0 : h*h/(2.0*ph);
 
-    if( res<0.0001 || t>tmax ) break;
+//     float y = h*h/(2.0*ph);
+//     float d = sqrt(h*h-y*y);
+//     res = min( res, 10.0*d/max(0.0,t-y) );
+//     ph = h;
 
-  }
-  return clamp( res, 0.0, 1.0 );
-}
+//     t += h;
 
-vec3 GetNormal(vec3 p) {
-	float d = GetDist(p);
-  vec2 e = vec2(.01, 0);
+//     if( res<0.0001 || t>tmax ) break;
 
-  vec3 n = d - vec3(
-      GetDist(p-e.xyy),
-      GetDist(p-e.yxy),
-      GetDist(p-e.yyx));
+//   }
+//   return clamp( res, 0.0, 1.0 );
+// }
 
-  return normalize(n);
-}
+// vec3 GetNormal(vec3 p) {
+// 	float d = objectSDF(p);
+//   vec2 e = vec2(.01, 0);
 
-float GetLight(vec3 p, vec3 lightPos) {
-  vec3 l = normalize(lightPos-p);
+//   vec3 n = d - vec3(
+//       objectSDF(p-e.xyy),
+//       objectSDF(p-e.yxy),
+//       objectSDF(p-e.yyx));
 
-  vec3 n = GetNormal(p);
-  float dif = clamp(dot(n, l), 0., 1.0);
+//   return normalize(n);
+// }
 
-  // float d = RayMarch(p+n*SURF_DIST*2., l);
-  // if(d<length(lightPos-p)) dif *= .1;
+// float GetLight(vec3 p, vec3 lightPos) {
+//   vec3 l = normalize(lightPos-p);
 
-  float shadow = calcSoftshadow( p, l, 0.01, 3.0);
-  dif *= shadow;
+//   vec3 n = GetNormal(p);
+//   float dif = clamp(dot(n, l), 0., 1.0);
 
-  return dif;
-}
+//   // float d = RayMarch(p+n*SURF_DIST*2., l);
+//   // if(d<length(lightPos-p)) dif *= .1;
 
-float GetContour(vec3 p, float z){
-  // vec3 n = GetNormal(p);
-  // float dif = dot( camPos, n);
-  // float c = 0.0;
-  // if(dif > 0.5){
-  //   c = 1.0;
-  // }
-  return z;
-}
+//   float shadow = calcSoftshadow( p, l, 0.01, 3.0);
+//   dif *= shadow;
+
+//   return dif;
+// }
+
+// float GetContour(vec3 p, float z){
+//   // vec3 n = GetNormal(p);
+//   // float dif = dot( camPos, n);
+//   // float c = 0.0;
+//   // if(dif > 0.5){
+//   //   c = 1.0;
+//   // }
+//   return z;
+// }
 
 vec3 R(vec2 uv, vec3 p, vec3 l, float z) {
     vec3 f = normalize(l-p),
@@ -248,7 +265,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
   vec3 rd = R(uv, ro, vec3(0,1,0), 1.);
 
-  float d = RayMarch(ro, rd);
+  vec4 dC = RayMarchColor(ro, rd);
+  float d = dC.w;
 
   float z = 1.0 - (d*0.2 - 0.7);
   z = clamp(z , 0.0, 1.0);
@@ -257,7 +275,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
   vec3 colB = vec3(1.0,0.3,0.2);
 
   // col = vec3(z);
-  col = mix(colB,colA, z);
+  vec3 zC = mix(colB,colA, z);
+  
+  // col = mix(zC,dC.rgb * z, 0.9 ) ;
+  col = z * dC.rgb;
 
   fragColor = vec4(col,1.0);
 }
